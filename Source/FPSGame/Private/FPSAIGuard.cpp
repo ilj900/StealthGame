@@ -5,8 +5,10 @@
 #include "Perception/PawnSensingComponent.h"
 #include "DrawDebugHelpers.h"
 #include "FPSGameMode.h"
+#include "UnrealNetwork.h"
 #include "Engine/TargetPoint.h"
-#include "NavigationSystem.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -35,7 +37,7 @@ void AFPSAIGuard::BeginPlay()
 
 void AFPSAIGuard::MoveToNextPatrolPoint()
 {
-	UNavigationSystemV1::SimpleMoveToActor(GetController(), Waypoints[CurrentPatrolPoint]);
+	UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), Waypoints[CurrentPatrolPoint]);
 }
 
 // Called every frame
@@ -57,6 +59,11 @@ void AFPSAIGuard::Tick(float DeltaTime)
 		}
 		MoveToNextPatrolPoint();
 	}
+}
+
+void AFPSAIGuard::OnRep_GuardState()
+{
+		OnStateChanged(GuardState);
 }
 
 void AFPSAIGuard::OnPawnSeen(APawn* SeenPawn)
@@ -110,8 +117,16 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 	{
 		return;
 	}
-
+	
 	GuardState = NewState;
-	OnStateChanged(NewState);
+	OnRep_GuardState();
 }
+
+void AFPSAIGuard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSAIGuard, GuardState);
+}
+
 

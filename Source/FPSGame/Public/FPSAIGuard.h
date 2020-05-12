@@ -57,7 +57,11 @@ protected:
 	FRotator OriginalRotation;
 	FTimerHandle TimerHandle_ResetOrientation;
 
+	UPROPERTY(ReplicatedUsing=OnRep_GuardState)
 	EAIState GuardState;
+
+	UFUNCTION()
+	void OnRep_GuardState();
 
 	UPROPERTY(EditInstanceOnly, Category = "AI")
 	bool bPatrol;
